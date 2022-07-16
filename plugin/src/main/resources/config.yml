@@ -1,0 +1,28 @@
+bosses:
+  test:
+    entity: ZOMBIE
+    age: 1
+
+    name: "Test Zombie"
+
+    health: 60.0
+
+    equipment:
+      armor:
+        helmet:
+          item: DIAMOND_HELMET
+          enchantments: ["PROTECTION:1"]
+          glowing: true
+      hands:
+        primary:
+          item: DIAMOND_SWORD
+          enchantments: ["SHARPNESS:1"]
+        secondary:
+          item: SHIELD
+          enchantments: ["UNBREAKING:1"]
+
+    potions:
+      - "SPEED:1"
+
+    abilities:
+      - "TEST"

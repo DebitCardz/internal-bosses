@@ -1,0 +1,8 @@
+name: internal-bosses-example
+version: 0.0.1
+main: me.tech.internalbosses.exampleplugin.ExamplePlugin
+description: Plugin to test the API.
+author: Tech
+depend:
+ - internal-bosses
+api-version: 1.18

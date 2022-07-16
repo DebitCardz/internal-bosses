@@ -1,0 +1,11 @@
+name: internal-bosses
+version: 0.0.1
+main: me.tech.internalbosses.plugin.InternalBossesPlugin
+description: Basic boss plugin.
+author: Tech
+commands:
+  summonboss: {}
+api-version: 1.18
+softdepend:
+ - HolographicDisplays
+ - DecentHolograms
