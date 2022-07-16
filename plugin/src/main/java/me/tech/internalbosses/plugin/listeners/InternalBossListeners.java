@@ -29,14 +29,13 @@ import java.util.Optional;
 public class InternalBossListeners implements Listener {
     private final BossManagerImpl bossManager;
 
-    // can't make this final because lombok moment.
     @NotNull
-    private Server server;
+    private final Server server;
+
+    @NotNull
+    private final PluginManager pm;
 
     private final MiniMessage mm;
-
-    @NotNull
-    private final PluginManager pm = server.getPluginManager();
 
     @EventHandler
     public void onEntityMove(EntityMoveEvent ev) {
@@ -67,11 +66,18 @@ public class InternalBossListeners implements Listener {
             return;
         }
         var spawnedBoss = possibleSpawnedBoss.get();
+        var killer = ev.getEntity().getKiller();
+
+        // Wipe natural drops.
+        ev.getDrops().clear();
+        ev.setDroppedExp(0);
 
         pm.callEvent(new InternalBossKilledEvent(
                 spawnedBoss.getBoss(),
                 spawnedBoss,
-                ev.getEntity().getKiller()
+                killer,
+                // Give bag & return in event.
+                spawnedBoss.getBoss().rewardLootBag(killer).orElse(null)
         ));
     }
 
@@ -107,15 +113,19 @@ public class InternalBossListeners implements Listener {
             return;
         }
 
-        server.broadcast(Component.newline());
+        server.broadcast(Component.empty());
         server.broadcast(mm.deserialize(
                 "<white><boss_name> <yellow>has been summoned in <white><world> <yellow>at <white><x><yellow>, <white><y><yellow>, <white><z><yellow>.",
                 Placeholder.unparsed("boss_name", boss.getUncoloredName()),
                 Placeholder.unparsed("world", ev.getLocation().getWorld().getName()),
-                Placeholder.unparsed("x", String.valueOf(ev.getLocation().getX())),
-                Placeholder.unparsed("y", String.valueOf(ev.getLocation().getY())),
-                Placeholder.unparsed("z", String.valueOf(ev.getLocation().getZ()))
+                Placeholder.unparsed("x", String.valueOf(cleanCoordinate(ev.getLocation().getX()))),
+                Placeholder.unparsed("y", cleanCoordinate(ev.getLocation().getY())),
+                Placeholder.unparsed("z", cleanCoordinate(ev.getLocation().getZ()))
         ));
-        server.broadcast(Component.newline());
+        server.broadcast(Component.empty());
+    }
+
+    private String cleanCoordinate(double coordinate) {
+        return String.valueOf(Math.round(coordinate));
     }
 }

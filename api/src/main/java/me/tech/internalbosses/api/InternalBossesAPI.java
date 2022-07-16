@@ -36,6 +36,14 @@ public final class InternalBossesAPI {
     }
 
     /**
+     * Add a {@link InternalBossAbility} to storage.
+     * @param ability {@link InternalBossAbility}
+     */
+    public void addAbility(InternalBossAbility ability) {
+        abilityManager.addAbility(ability);
+    }
+
+    /**
      * @param id {@link InternalBossAbility} ID.
      * @return {@link Optional<InternalBossAbility>}
      */

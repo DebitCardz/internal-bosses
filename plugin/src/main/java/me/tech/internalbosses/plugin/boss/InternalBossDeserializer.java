@@ -3,6 +3,9 @@ package me.tech.internalbosses.plugin.boss;
 import me.tech.internalbosses.api.boss.InternalBoss;
 import me.tech.internalbosses.api.boss.InternalBossBuilder;
 import me.tech.internalbosses.api.boss.abilities.InternalBossAbility;
+import me.tech.internalbosses.api.boss.loot.InternalBossCommandLoot;
+import me.tech.internalbosses.api.boss.loot.InternalBossItemLoot;
+import me.tech.internalbosses.api.boss.loot.InternalBossLootBag;
 import me.tech.internalbosses.api.exceptions.BossFailedToLoadException;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -31,20 +34,8 @@ public class InternalBossDeserializer {
         }
         EntityType entityType = EntityType.valueOf(entityTypeStr);
 
-        var abilities = new HashSet<InternalBossAbility>();
-        for(String abilityName : boss.getStringList("abilities")) {
-            Optional<InternalBossAbility> possibleAbility = abilityManager.getById(abilityName);
-            if(possibleAbility.isEmpty()) {
-//                throw new BossFailedToLoadException();
-                continue;
-            }
-
-            abilities.add(possibleAbility.get());
-        }
-
         return InternalBossBuilder.builder()
                 .name(boss.getString("name"))
-                .nameColor(boss.getString("name_color"))
                 .health(boss.getDouble("health"))
                 .entityType(entityType)
                 .glowing(boss.getBoolean("glowing"))
@@ -52,10 +43,53 @@ public class InternalBossDeserializer {
                         boss.getConfigurationSection("equipment.armor"),
                         boss.getConfigurationSection("equipment.hands")
                 ))
-                .loot(Set.of())
-                .abilities(abilities)
+                .loot(deserializeLoot(boss.getConfigurationSection("loot")))
+                .abilities(deserializeAbilities(boss.getStringList("abilities"), abilityManager))
                 .alertOnSummon(boss.getBoolean("alert_on_summon"))
                 .build();
+    }
+
+    private static Set<InternalBossLootBag> deserializeLoot(@Nullable ConfigurationSection loot) {
+        Set<InternalBossLootBag> bags = new HashSet<>();
+        if(loot == null) {
+            return bags;
+        }
+
+        for(String key : loot.getKeys(false)) {
+            List<InternalBossItemLoot> itemLoot = new ArrayList<>();
+            List<InternalBossCommandLoot> commandLoot = new ArrayList<>();
+
+            ConfigurationSection bagSection = loot.getConfigurationSection(key);
+            if(bagSection == null) {
+                continue;
+            }
+
+            var items = bagSection.getConfigurationSection("items");
+            if(items != null) {
+                items.getKeys(false).forEach(k -> {
+                    deserializeItemStackFromConfig(items.getConfigurationSection(k))
+                            .ifPresent(item -> itemLoot.add(new InternalBossItemLoot(item)));
+                });
+            }
+
+            var commands = bagSection.getStringList("commands");
+            if(commands.size() != 0) {
+                for(String cmd : commands) {
+                    commandLoot.add(new InternalBossCommandLoot(
+                            cmd
+                    ));
+                }
+            }
+
+            bags.add(new InternalBossLootBag(
+                    itemLoot,
+                    commandLoot,
+                    bagSection.getDouble("chance"),
+                    bagSection.getBoolean("default")
+            ));
+        }
+
+        return bags;
     }
 
     private static Map<EquipmentSlot, ItemStack> deserializeEquipmentSlots(ConfigurationSection ...sections) {

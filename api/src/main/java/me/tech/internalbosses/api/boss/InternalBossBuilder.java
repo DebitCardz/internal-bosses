@@ -1,6 +1,7 @@
 package me.tech.internalbosses.api.boss;
 
 import me.tech.internalbosses.api.boss.abilities.InternalBossAbility;
+import me.tech.internalbosses.api.boss.loot.InternalBossLootBag;
 import me.tech.internalbosses.api.exceptions.BossFailedToLoadException;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -15,9 +16,6 @@ import java.util.Set;
 public class InternalBossBuilder {
     private String name;
 
-    @Deprecated
-    private String nameColor;
-
     private double health;
 
     private EntityType entityType;
@@ -26,7 +24,7 @@ public class InternalBossBuilder {
 
     private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
 
-    private Set<InternalBossLoot> loot = new HashSet<>();
+    private Set<InternalBossLootBag> loot = new HashSet<>();
 
     private Set<InternalBossAbility> abilities = new HashSet<>();
 
@@ -41,12 +39,6 @@ public class InternalBossBuilder {
 
     public InternalBossBuilder name(String name) {
         this.name = name;
-        return this;
-    }
-
-    @Deprecated
-    public InternalBossBuilder nameColor(String nameColor) {
-        this.nameColor = nameColor;
         return this;
     }
 
@@ -75,7 +67,7 @@ public class InternalBossBuilder {
         return this;
     }
 
-    public InternalBossBuilder loot(Set<InternalBossLoot> loot) {
+    public InternalBossBuilder loot(Set<InternalBossLootBag> loot) {
         this.loot = loot;
         return this;
     }

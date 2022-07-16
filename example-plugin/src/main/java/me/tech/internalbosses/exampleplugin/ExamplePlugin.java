@@ -1,67 +1,90 @@
 package me.tech.internalbosses.exampleplugin;
 
 import me.tech.internalbosses.api.InternalBossesAPI;
-import me.tech.internalbosses.api.boss.InternalBoss;
-import me.tech.internalbosses.api.events.InternalBossDamagedByPlayerEvent;
-import me.tech.internalbosses.api.events.InternalBossKilledEvent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import me.tech.internalbosses.api.boss.InternalBossBuilder;
+import me.tech.internalbosses.api.boss.abilities.InternalBossAbility;
+import me.tech.internalbosses.api.boss.loot.InternalBossItemLoot;
+import me.tech.internalbosses.api.boss.loot.InternalBossLootBag;
+import me.tech.internalbosses.api.premade.abilities.FireballAbility;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class ExamplePlugin extends JavaPlugin implements Listener {
-    private InternalBossesAPI internalBossesAPI;
+    private InternalBossesAPI ibAPI;
 
     @Override
     public void onEnable() {
         ServicesManager sm =  getServer().getServicesManager();
 
-        internalBossesAPI = sm.load(InternalBossesAPI.class);
-        if(internalBossesAPI == null) {
+        ibAPI = sm.load(InternalBossesAPI.class);
+        if(ibAPI == null) {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        var boss = InternalBoss.builder()
-                .name("sus")
-                .nameColor("&c")
-                .entityType(EntityType.ZOMBIE)
-                .glowing(true)
-                .alertOnSummon(true)
-                .health(30)
-                .equipment(Map.of(EquipmentSlot.HEAD, new ItemStack(Material.DIAMOND_HELMET)))
-                .ability(internalBossesAPI.getAbilityById("fireball").get())
-                .build();
-
-        internalBossesAPI.addBoss("sus", boss);
-
-        getServer().getPluginManager().registerEvents(this, this);
+        createTestBoss();
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent ev) {
-        getServer().getScheduler().runTaskLater(this, () -> internalBossesAPI.summonBoss(
-                "test",
-                ev.getPlayer().getLocation().add(0.0, 2.5, 0.0)
-        ), 20L * 5);
+    private void createTestBoss() {
+        // Register a new boss under the id 'test-boss'.
+        ibAPI.addBoss(
+                "test-boss",
+                InternalBossBuilder.builder()
+                        .name("<red>Test Zombie")
+                        .health(45.0)
+                        .entityType(EntityType.HUSK)
+
+                        .loot(getLootBags())
+                        .ability(getFireballAbility())
+
+                        .equipmentSlot(EquipmentSlot.HAND, new ItemStack(Material.DIAMOND_SWORD))
+                        .equipmentSlot(EquipmentSlot.HEAD, new ItemStack(Material.CHAINMAIL_HELMET))
+
+                        .glowing(false)
+                        .alertOnSummon(true)
+                        .build()
+        );
     }
 
-    @EventHandler
-    public void onBossDamage(InternalBossDamagedByPlayerEvent ev) {
-        ev.getAttacker().sendMessage("You've hit " + ev.getBoss().getUncoloredName());
+    private InternalBossAbility getFireballAbility() {
+        // Register our pre-made Fireball ability.
+        ibAPI.addAbility(new FireballAbility());
+        var possibleFireballAbility = ibAPI.getAbilityById("fireball");
+        if(possibleFireballAbility.isEmpty()) {
+            throw new RuntimeException("failed to create and get fireball ability.");
+        }
+
+        return possibleFireballAbility.get();
     }
 
-    @EventHandler
-    public void onBossKilled(InternalBossKilledEvent ev) {
-        ev.getKiller().sendMessage(Component.text("You've killed " + ev.getBoss().getUncoloredName(), NamedTextColor.RED));
+    private Set<InternalBossLootBag> getLootBags() {
+        var loot = new HashSet<InternalBossLootBag>();
+
+        // Default drop.
+        loot.add(new InternalBossLootBag(
+                List.of(new InternalBossItemLoot(new ItemStack(Material.DIAMOND))),
+                List.of(),
+                0.0,
+                true
+        ));
+
+        // 25% chance to drop this,
+        loot.add(new InternalBossLootBag(
+           List.of(new InternalBossItemLoot(new ItemStack(Material.EMERALD))),
+           List.of(),
+           25.0,
+           false
+        ));
+
+        return loot;
     }
 }

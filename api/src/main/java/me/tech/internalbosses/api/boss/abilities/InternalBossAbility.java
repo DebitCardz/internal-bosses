@@ -1,5 +1,7 @@
 package me.tech.internalbosses.api.boss.abilities;
 
+import me.tech.internalbosses.api.Chance;
+
 public interface InternalBossAbility {
     /**
      * @return Ability ID.
@@ -11,6 +13,6 @@ public interface InternalBossAbility {
      * @return Whether the random outcome was successful.
      */
     static boolean successfulRandom(double chance) {
-        return (Math.random() * 100) > (100.0 - chance);
+        return Chance.successfulRandom(chance);
     }
 }

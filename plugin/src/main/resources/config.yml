@@ -21,8 +21,23 @@ bosses:
           item: SHIELD
           enchantments: ["UNBREAKING:1"]
 
+    loot:
+      1:
+        items:
+          1:
+            item: DIAMOND_HELMET
+            enchantments: ["UNBREAKING:1"]
+        commands:
+          - "say <player> has slain the boss and got a diamond helmet!"
+        chance: 25.0
+      2:
+        items:
+          1:
+            item: EMERALD
+        default: true
+
     potions:
       - "SPEED:1"
 
     abilities:
-      - "TEST"
+      - "FIREBALL"

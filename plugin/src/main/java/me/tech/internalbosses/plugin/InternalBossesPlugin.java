@@ -65,7 +65,7 @@ public final class InternalBossesPlugin extends JavaPlugin {
         );
 
         Arrays.asList(
-                new InternalBossListeners(bossManager, getServer(), miniMessage)
+                new InternalBossListeners(bossManager, getServer(), getServer().getPluginManager(), miniMessage)
         ).forEach(l -> getServer().getPluginManager().registerEvents(l, this));
 
         getCommand("summonboss").setExecutor(new SummonBossCommand(bossManager, miniMessage));
