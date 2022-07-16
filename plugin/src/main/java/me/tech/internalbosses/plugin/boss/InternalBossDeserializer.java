@@ -14,6 +14,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -43,6 +45,7 @@ public class InternalBossDeserializer {
                         boss.getConfigurationSection("equipment.hands")
                 ))
                 .loot(deserializeLoot(boss.getConfigurationSection("loot")))
+                .effects(deserializeEffects(boss.getStringList("potions")))
                 .abilities(deserializeAbilities(boss.getStringList("abilities"), abilityManager))
                 .alertOnSummon(boss.getBoolean("alert_on_summon"))
                 .build();
@@ -164,6 +167,38 @@ public class InternalBossDeserializer {
         }
 
         stack.addUnsafeEnchantment(enchant, level);
+    }
+
+    private static Set<PotionEffect> deserializeEffects(@Nullable List<String> potionList) {
+        Set<PotionEffect> effects = new HashSet<>();
+        if(potionList == null) {
+            return effects;
+        }
+
+        for(String unparsedPotion : potionList) {
+            String[] strings = unparsedPotion.split(":");
+
+            PotionEffectType type = PotionEffectType.getByKey(NamespacedKey.minecraft(strings[0].toLowerCase()));
+            if(type == null) {
+                throw new IllegalArgumentException(strings[0] + " is not a valid potion id.");
+            }
+
+            int amplifier;
+            try {
+                amplifier = Integer.parseInt(strings[1]);
+            } catch(NumberFormatException ignored) {
+                amplifier = 1;
+            }
+
+            effects.add(new PotionEffect(
+                    type,
+                    99_999,
+                    amplifier,
+                    false
+            ));
+        }
+
+        return effects;
     }
 
     private static Set<InternalBossAbility> deserializeAbilities(

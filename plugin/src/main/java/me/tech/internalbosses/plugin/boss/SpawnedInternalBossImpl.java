@@ -4,14 +4,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.tech.internalbosses.api.boss.InternalBoss;
 import me.tech.internalbosses.api.boss.SpawnedInternalBoss;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 
 @Getter
 @RequiredArgsConstructor
@@ -23,7 +19,7 @@ public class SpawnedInternalBossImpl implements SpawnedInternalBoss {
     private final Location spawnLocation;
 
     public void applyPotionEffects() {
-
+        boss.getEffects().forEach(entity::addPotionEffect);
     }
 
     public void applyHealth() {

@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +26,8 @@ public class InternalBossBuilder {
     private Map<EquipmentSlot, ItemStack> equipment = new HashMap<>();
 
     private Set<InternalBossLootBag> loot = new HashSet<>();
+
+    private Set<PotionEffect> effects = new HashSet<>();
 
     private Set<InternalBossAbility> abilities = new HashSet<>();
 
@@ -72,6 +75,16 @@ public class InternalBossBuilder {
         return this;
     }
 
+    public InternalBossBuilder effects(Set<PotionEffect> effects) {
+        this.effects.addAll(effects);
+        return this;
+    }
+
+    public InternalBossBuilder effect(PotionEffect effect) {
+        this.effects.add(effect);
+        return this;
+    }
+
     public InternalBossBuilder abilities(Set<InternalBossAbility> abilities) {
         this.abilities.addAll(abilities);
         return this;
@@ -106,6 +119,7 @@ public class InternalBossBuilder {
                 isGlowing,
                 equipment,
                 loot,
+                effects,
                 abilities,
                 alertOnSummon
         );
