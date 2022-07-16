@@ -3,9 +3,8 @@ package me.tech.internalbosses.plugin.boss;
 import me.tech.internalbosses.api.boss.InternalBoss;
 import me.tech.internalbosses.api.boss.InternalBossBuilder;
 import me.tech.internalbosses.api.boss.abilities.InternalBossAbility;
-import me.tech.internalbosses.api.boss.loot.InternalBossCommandLoot;
-import me.tech.internalbosses.api.boss.loot.InternalBossItemLoot;
 import me.tech.internalbosses.api.boss.loot.InternalBossLootBag;
+import me.tech.internalbosses.api.boss.loot.InternalBossLootBagBuilder;
 import me.tech.internalbosses.api.exceptions.BossFailedToLoadException;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -55,38 +54,32 @@ public class InternalBossDeserializer {
             return bags;
         }
 
-        for(String key : loot.getKeys(false)) {
-            List<InternalBossItemLoot> itemLoot = new ArrayList<>();
-            List<InternalBossCommandLoot> commandLoot = new ArrayList<>();
+        for(String dropsId : loot.getKeys(false)) {
+            var builder = InternalBossLootBagBuilder.builder();
 
-            ConfigurationSection bagSection = loot.getConfigurationSection(key);
-            if(bagSection == null) {
+            ConfigurationSection drops = loot.getConfigurationSection(dropsId);
+            if(drops == null) {
                 continue;
             }
 
-            var items = bagSection.getConfigurationSection("items");
-            if(items != null) {
-                items.getKeys(false).forEach(k -> {
-                    deserializeItemStackFromConfig(items.getConfigurationSection(k))
-                            .ifPresent(item -> itemLoot.add(new InternalBossItemLoot(item)));
+            // Add items.
+            var itemDrops = drops.getConfigurationSection("items");
+            if(itemDrops != null) {
+                itemDrops.getKeys(false).forEach(k -> {
+                    deserializeItemStackFromConfig(itemDrops.getConfigurationSection(k))
+                            .ifPresent(builder::addLoot);
                 });
             }
+            // Add commands.
+            drops.getStringList("commands").forEach(builder::addLoot);
 
-            var commands = bagSection.getStringList("commands");
-            if(commands.size() != 0) {
-                for(String cmd : commands) {
-                    commandLoot.add(new InternalBossCommandLoot(
-                            cmd
-                    ));
-                }
-            }
-
-            bags.add(new InternalBossLootBag(
-                    itemLoot,
-                    commandLoot,
-                    bagSection.getDouble("chance"),
-                    bagSection.getBoolean("default")
-            ));
+            // Add final values then put into the Set.
+            bags.add(
+                    builder
+                        .chance(drops.getDouble("chance"))
+                        .defaultDrop(drops.getBoolean("default"))
+                        .build()
+            );
         }
 
         return bags;

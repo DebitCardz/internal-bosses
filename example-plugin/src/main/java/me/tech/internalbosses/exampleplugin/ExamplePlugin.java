@@ -1,10 +1,12 @@
 package me.tech.internalbosses.exampleplugin;
 
 import me.tech.internalbosses.api.InternalBossesAPI;
+import me.tech.internalbosses.api.boss.InternalBoss;
 import me.tech.internalbosses.api.boss.InternalBossBuilder;
 import me.tech.internalbosses.api.boss.abilities.InternalBossAbility;
 import me.tech.internalbosses.api.boss.loot.InternalBossItemLoot;
 import me.tech.internalbosses.api.boss.loot.InternalBossLootBag;
+import me.tech.internalbosses.api.boss.loot.InternalBossLootBagBuilder;
 import me.tech.internalbosses.api.premade.abilities.FireballAbility;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -38,7 +40,7 @@ public final class ExamplePlugin extends JavaPlugin implements Listener {
         // Register a new boss under the id 'test-boss'.
         ibAPI.addBoss(
                 "test-boss",
-                InternalBossBuilder.builder()
+                InternalBoss.builder()
                         .name("<red>Test Zombie")
                         .health(45.0)
                         .entityType(EntityType.HUSK)
@@ -67,24 +69,17 @@ public final class ExamplePlugin extends JavaPlugin implements Listener {
     }
 
     private Set<InternalBossLootBag> getLootBags() {
-        var loot = new HashSet<InternalBossLootBag>();
+        var bag1 = InternalBossLootBag.builder()
+                .addLoot(new ItemStack(Material.DIAMOND))
+                .addLoot("say <player> got a Diamond for killing the boss!")
+                .chance(35.0)
+                .build();
 
-        // Default drop.
-        loot.add(new InternalBossLootBag(
-                List.of(new InternalBossItemLoot(new ItemStack(Material.DIAMOND))),
-                List.of(),
-                0.0,
-                true
-        ));
+        var defaultBag = InternalBossLootBag.builder()
+                .addLoot(new ItemStack(Material.EMERALD))
+                .defaultDrop(true)
+                .build();
 
-        // 25% chance to drop this,
-        loot.add(new InternalBossLootBag(
-           List.of(new InternalBossItemLoot(new ItemStack(Material.EMERALD))),
-           List.of(),
-           25.0,
-           false
-        ));
-
-        return loot;
+        return Set.of(bag1, defaultBag);
     }
 }

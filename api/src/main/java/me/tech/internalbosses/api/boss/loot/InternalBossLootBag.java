@@ -26,4 +26,8 @@ public class InternalBossLootBag {
         items.forEach(loot -> loot.give(player));
         commands.forEach(loot -> loot.give(player));
     }
+
+    public static InternalBossLootBagBuilder builder() {
+        return new InternalBossLootBagBuilder();
+    }
 }
